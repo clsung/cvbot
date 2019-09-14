@@ -1,0 +1,21 @@
+version: '3'
+
+services:
+  chatbot:
+    build:
+      context: ../
+      dockerfile: deploy/Dockerfile
+    command: simple
+    #env_file:
+    #  - .env
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - LINE_CHANNEL_SECRET=${LINE_CHANNEL_SECRET}
+      - LINE_CHANNEL_TOKEN=${LINE_CHANNEL_TOKEN}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - GOOGLE_APPLICATION_CREDENTIALS=/google-cred.json
+    volumes:
+      - "${GOOGLE_APPLICATION_CREDENTIALS}:/google-cred.json:ro"
