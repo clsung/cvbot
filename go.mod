@@ -11,6 +11,7 @@ require (
 	github.com/google/btree v1.0.0 // indirect
 	github.com/google/pprof v0.0.0-20190515194954-54271f7e092f // indirect
 	github.com/googleapis/gax-go/v2 v2.0.5 // indirect
+	github.com/knq/sdhook v0.0.0-20190801142816-0b7fa827d09a
 	github.com/kr/pty v1.1.5 // indirect
 	github.com/line/line-bot-sdk-go v6.3.0+incompatible
 	github.com/pkg/errors v0.8.1

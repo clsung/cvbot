@@ -16,17 +16,20 @@ RUN go get -u "github.com/aws/aws-sdk-go/aws" \
     "github.com/aws/aws-sdk-go/service/rekognition" \
     "cloud.google.com/go/vision/apiv1" \
     "github.com/sirupsen/logrus" \
+    "github.com/knq/sdhook" \
 	"go.opencensus.io/trace" \
 	"contrib.go.opencensus.io/exporter/stackdriver" \
 	"github.com/clsung/logger" \
 	"github.com/pkg/errors" \
     "github.com/line/line-bot-sdk-go/linebot"
 COPY . /go/src/github.com/clsung/cvbot/
-# simple for simple bot, telsimple add log for stackdriver logging
+# simple for simple bot, telsimple add trace for stackdriver logging
 # WORKDIR /go/src/github.com/clsung/cvbot/cmd/simple/
 # WORKDIR /go/src/github.com/clsung/cvbot/cmd/telsimple/
 # tracesim adds trace to stackdriver
-WORKDIR /go/src/github.com/clsung/cvbot/cmd/tracesim/
+#WORKDIR /go/src/github.com/clsung/cvbot/cmd/tracesim/
+# logrusimple add stackdriver compatible log
+WORKDIR /go/src/github.com/clsung/cvbot/cmd/logrusimple/
 RUN go build -o /go/bin/cvbot
 
 
