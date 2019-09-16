@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -20,30 +21,42 @@ func main() {
 		FieldMap: logrus.FieldMap{
 			logrus.FieldKeyTime:  "time",
 			logrus.FieldKeyLevel: "severity",
-			logrus.FieldKeyMsg:   "message",
 		},
 	})
+
 	// create hook using service account credentials
 	if metadata.OnGCE() {
-		log.Printf("test sdhook support")
+		// stackdriver query:
+		//  resource.type = "cloud_run_revision"
+		//  resource.labels.service_name = "cvbot"
+		//  resource.labels.location = "us-central1"
+		//  NOT logName: "cloudaudit.googleapis.com"
+		//  NOT (logName : "varlog%2Fsystem" AND severity = DEBUG)
+		//  severity>=DEFAULT
+		ProjectID, _ := metadata.ProjectID()
+		Zone, _ := metadata.Zone() // zone, such as "us-central1-b".
 		h, err := sdhook.New(
-			sdhook.GoogleServiceAccountCredentialsFile("/auth.json"),
-			//sdhook.GoogleComputeCredentials(""), // use default service account
+			sdhook.GoogleComputeCredentials(""), // use default service account
+			sdhook.ProjectID(ProjectID),
+			sdhook.LogName(os.Getenv("K_SERVICE")), // must call after ProjectID()
+			sdhook.Resource(sdhook.ResTypeCloudRunRevision, map[string]string{
+				"project_id":         ProjectID,
+				"service_name":       os.Getenv("K_SERVICE"),
+				"revision_name":      os.Getenv("K_REVISION"),
+				"location":           Zone[:len(Zone)-2], // location, such as "us-central1"
+				"configuration_name": os.Getenv("K_CONFIGURATION"),
+			}),
 		)
-		log.Printf("test sdhook support %v", err)
 		if err != nil {
 			log.Fatal(err)
 		}
 		logger.Hooks.Add(h)
-		log.Printf("sdhook support hooked")
-	} else {
-		log.Printf("no sdhook support")
+		logger.Out = ioutil.Discard // don't print to stderr, omit it
 	}
 	app := cvbot.LoggingMiddleware(logger)(cvbot.NewCVApp())
 	// Setup HTTP Server for receiving requests from LINE platform
 	http.HandleFunc("/webhook", func(w http.ResponseWriter, req *http.Request) {
 		events, err := app.ParseRequest(req.Context(), req)
-		log.Printf("events: %d, err: %v", events, err)
 		if err != nil {
 			if err == linebot.ErrInvalidSignature {
 				w.WriteHeader(400)
