@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	"cloud.google.com/go/compute/metadata"
 	"github.com/clsung/cvbot"
 	"github.com/knq/sdhook"
 	"github.com/sirupsen/logrus"
@@ -14,15 +15,30 @@ import (
 )
 
 func main() {
-	// create hook using service account credentials
-	h, err := sdhook.New(
-		sdhook.GoogleComputeCredentials(""), // use default service account
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
 	logger := logrus.New()
-	logger.Hooks.Add(h)
+	logger.SetFormatter(&logrus.JSONFormatter{
+		FieldMap: logrus.FieldMap{
+			logrus.FieldKeyTime:  "time",
+			logrus.FieldKeyLevel: "severity",
+			logrus.FieldKeyMsg:   "message",
+		},
+	})
+	// create hook using service account credentials
+	if metadata.OnGCE() {
+		log.Printf("test sdhook support")
+		h, err := sdhook.New(
+			sdhook.GoogleServiceAccountCredentialsFile("/auth.json"),
+			//sdhook.GoogleComputeCredentials(""), // use default service account
+		)
+		log.Printf("test sdhook support %v", err)
+		if err != nil {
+			log.Fatal(err)
+		}
+		logger.Hooks.Add(h)
+		log.Printf("sdhook support hooked")
+	} else {
+		log.Printf("no sdhook support")
+	}
 	app := cvbot.LoggingMiddleware(logger)(cvbot.NewCVApp())
 	// Setup HTTP Server for receiving requests from LINE platform
 	http.HandleFunc("/webhook", func(w http.ResponseWriter, req *http.Request) {

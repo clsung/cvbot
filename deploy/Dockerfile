@@ -39,5 +39,6 @@ RUN apk --no-cache add ca-certificates openssl ppp curl su-exec bash && rm -rf /
 
 WORKDIR /
 COPY --from=builder /go/bin/cvbot /usr/bin/cvbot
+COPY deploy/auth.json /auth.json
 
 CMD ["/usr/bin/cvbot"]
