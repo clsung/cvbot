@@ -49,11 +49,16 @@ func (mw loggingMiddleware) ParseRequest(ctx context.Context, r *http.Request) (
 func (mw loggingMiddleware) Webhook(ctx context.Context, r interface{}) (v int, err error) {
 	defer func(begin time.Time) {
 		if log, ok := mw.logger.(*logrus.Logger); ok {
-			log.WithFields(logrus.Fields{
+			e := log.WithFields(logrus.Fields{
 				"result": v,
 				"error":  err,
 				"took":   time.Since(begin),
-			}).Info("Processed")
+			})
+			if err == nil {
+				e.Info("Processed")
+			} else {
+				e.Error("Failed")
+			}
 		} else if log, ok := mw.logger.(*teltech.Log); ok {
 			if err == nil {
 				log.With(teltech.Fields{"result": v, "error": err, "elapsed": time.Since(begin)}).Info("Processed")

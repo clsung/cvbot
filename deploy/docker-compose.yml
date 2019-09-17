@@ -5,7 +5,7 @@ services:
     build:
       context: ../
       dockerfile: deploy/Dockerfile
-    command: simple
+    command: cvbot
     #env_file:
     #  - .env
     ports:
