@@ -68,7 +68,7 @@ func (app *CVApp) HandleEvent(ctx context.Context, event *linebot.Event) (replyM
 		switch message := event.Message.(type) {
 		case *linebot.TextMessage:
 			span.AddAttributes(trace.StringAttribute("type", "text"))
-			replyMsgs = append(replyMsgs, linebot.NewTextMessage(message.Text))
+			//replyMsgs = append(replyMsgs, linebot.NewTextMessage(message.Text))
 		case *linebot.ImageMessage:
 			span.AddAttributes(trace.StringAttribute("type", "image"))
 			var retMsgs []linebot.SendingMessage
