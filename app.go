@@ -5,10 +5,8 @@ import (
 	"context"
 	"io"
 	"log"
-	"math/rand"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/clsung/cvbot/cv/aws"
 	"github.com/clsung/cvbot/cv/gcp"
@@ -143,7 +141,8 @@ func (app *CVApp) handleImageAsync(ctx context.Context, message *linebot.ImageMe
 		}()
 		go func() {
 			_, span := trace.StartSpan(ctx, "gcp")
-			time.Sleep(time.Duration(rand.Int31n(2000)) * time.Millisecond)
+			// uncomment it for demo purpose
+			// time.Sleep(time.Duration(rand.Int31n(2000)) * time.Millisecond)
 			gcpFaces, _ := gcp.FaceDetect(gcpBuf)
 			span.End()
 			dataCh <- string(gcpFaces)
