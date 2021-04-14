@@ -132,13 +132,15 @@ func (app *CVApp) handleImageAsync(ctx context.Context, message *linebot.ImageMe
 	defer span.End()
 	_, err = app.handleFaceRecognition(ctx, message.ID, func(gcpBuf io.Reader, awsBuf io.Reader) error {
 		dataCh := make(chan string, 1)
-		go func() {
-			_, span := trace.StartSpan(ctx, "aws")
-			awsFaces, _ := aws.FaceDetect(awsBuf)
-			span.End()
-			dataCh <- string(awsFaces)
-			return
-		}()
+		/*
+			go func() {
+				_, span := trace.StartSpan(ctx, "aws")
+				awsFaces, _ := aws.FaceDetect(awsBuf)
+				span.End()
+				dataCh <- string(awsFaces)
+				return
+			}()
+		*/
 		go func() {
 			_, span := trace.StartSpan(ctx, "gcp")
 			// uncomment it for demo purpose
