@@ -1,38 +1,40 @@
 package aws
 
 import (
+	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/rekognition"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/rekognition"
+	"github.com/aws/aws-sdk-go-v2/service/rekognition/types"
 )
 
 // FaceDetect detects face and return json data
 func FaceDetect(reader io.Reader) (ret []byte, err error) {
-	sess := session.New(&aws.Config{
-		Region: aws.String("us-west-2"),
-	})
-	svc := rekognition.New(sess)
+	ctx := context.Background()
+	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion("us-west-2"))
+	if err != nil {
+		return ret, err
+	}
+	svc := rekognition.NewFromConfig(cfg)
 
 	// Read buf to byte[]
-	b, err := ioutil.ReadAll(reader)
+	b, err := io.ReadAll(reader)
 	if err != nil {
 		return b, err
 	}
 
 	// Send the request to Rekognition
 	input := &rekognition.DetectFacesInput{
-		Image: &rekognition.Image{
+		Image: &types.Image{
 			Bytes: b,
 		},
-		Attributes: []*string{aws.String("ALL")},
+		Attributes: []types.Attribute{types.AttributeAll},
 	}
 
-	result, err := svc.DetectFaces(input)
+	result, err := svc.DetectFaces(ctx, input)
 	if err != nil {
 		log.Print(err)
 		return ret, err
